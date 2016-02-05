@@ -5,7 +5,9 @@ import { RoutingContext, match } from 'react-router';
 import createLocation from 'history/lib/createLocation';
 import routes from '../app/routes';
 import React from 'react';
-import ReactDOMServer from 'react-dom/server';
+import { renderToString } from 'react-dom/server';
+import configureStore from '../app/store/createStore';
+import { Provider } from 'react-redux';
 
 const app = express();
 
@@ -24,7 +26,12 @@ app.get('/*', function(req, res) {
     } else if (redirectLocation) {
       res.redirect(302, redirectLocation.pathname + redirectLocation.search);
     } else if (renderProps) {
-      const content = ReactDOMServer.renderToString(<RoutingContext {...renderProps} />);
+      const store = configureStore();
+      var content = renderToString(
+        <Provider store={store}>
+          <RoutingContext {...renderProps} />
+        </Provider>
+      );
       return res.status(200).render('index', {
         html: content
       });
